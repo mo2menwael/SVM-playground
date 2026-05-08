@@ -1,0 +1,207 @@
+/* =========================================================
+   layout.css — page structure: topbar, no-scroll app shell,
+                info sections, footer.
+
+   The page is laid out as a "pro app" shell:
+
+       ┌──────────────────────────────────────────────────────┐
+       │  TOPBAR  brand · nav · …actions… · [Train SVM]       │  60px sticky
+       ├────────────┬───────────────────────────┬─────────────┤
+       │ left rail  │      canvas (square)      │ right rail  │
+       │ (controls) │      + legend below       │ (live stats)│  100vh − topbar
+       └────────────┴───────────────────────────┴─────────────┘
+       (educational sections live below this shell, reachable
+        only by intentional scrolling)
+   ========================================================= */
+
+/* ---------- Topbar ---------- */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+.logo {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    box-shadow: var(--shadow-sm);
+}
+.brand-text h1 {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+.topbar-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.action-group {
+    display: flex;
+    gap: 6px;
+}
+
+/* ---------- App shell ---------- */
+.app-shell {
+    height: calc(100vh - var(--topbar-h));
+    display: grid;
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+    gap: var(--shell-gap);
+    padding: var(--shell-pad);
+    overflow: hidden;
+}
+
+.rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--shell-gap);
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+.rail::-webkit-scrollbar {
+    width: 8px;
+}
+.rail::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 4px;
+}
+.rail::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+.rail::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+/* canvas-area is its own column; never scrolls */
+.canvas-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 14px;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 10px;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1180px) {
+    :root {
+        --rail-left-w: 270px;
+        --rail-right-w: 210px;
+        --shell-gap: 14px;
+        --shell-pad: 14px;
+    }
+}
+
+/* Hard fallback for genuinely small screens only — stack and let the page
+   scroll. We deliberately do NOT trigger this on short heights (e.g. typical
+   1366×768 laptops with browser chrome have ~680px of usable height) because
+   the 3-column shell handles low heights gracefully: the rails scroll
+   internally and the canvas (square via container queries) shrinks to fit. */
+@media (max-width: 900px), (max-height: 480px) {
+    .app-shell {
+        height: auto;
+        grid-template-columns: 1fr;
+        overflow: visible;
+        padding: 16px;
+    }
+    .rail { overflow-y: visible; }
+    .canvas-area { min-height: min(72vw, 480px); }
+    .topbar { flex-wrap: wrap; height: auto; padding: 10px 16px; }
+    .topbar-actions { flex-wrap: wrap; }
+}
+
+/* ---------- Info sections (below the app shell) ---------- */
+.info-section {
+    max-width: 1100px;
+    margin: 36px auto;
+    padding: 0 32px;
+}
+.info-section h2 { margin-bottom: 8px; font-size: 1.15rem; }
+.info-section p  { color: var(--text-muted); }
+
+.kernel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+.kernel-grid article {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
+}
+.kernel-grid h3 { margin-bottom: 6px; color: var(--accent-strong); }
+.kernel-grid p  { font-size: 0.88rem; }
+
+/* ---------- Metrics explanation grid ---------- */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin: 14px 0;
+}
+.metrics-grid article {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
+}
+.metrics-grid h3 { margin-bottom: 6px; color: var(--accent-strong); }
+.metrics-grid p  { font-size: 0.88rem; margin: 6px 0; }
+.metric-warn {
+    border-left: 3px solid #f59e0b;
+    padding-left: 10px;
+    background: rgba(245, 158, 11, 0.06);
+    border-radius: 0 6px 6px 0;
+}
+.metric-summary {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.92rem;
+}
+.formula-inline {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+ol li { margin: 6px 0; color: var(--text-muted); }

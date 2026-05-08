@@ -1,0 +1,148 @@
+/* =========================================================
+   base.css — theme tokens, reset, typography
+   ========================================================= */
+
+:root {
+    /* surface */
+    --bg: #f6f8fb;
+    --bg-soft: #eef2f8;
+    --surface: #ffffff;
+    --surface-2: #fbfcfe;
+    --border: #e3e8f0;
+    --border-strong: #cbd3e1;
+
+    /* text */
+    --text: #1f2937;
+    --text-muted: #5b6776;
+    --text-faint: #8893a4;
+
+    /* accent */
+    --accent: #3a6df0;
+    --accent-strong: #2851c4;
+    --accent-soft: #e6edff;
+
+    /* canvas (kept identical in light/dark so the heatmap colors stay readable) */
+    --canvas-bg: #ffffff;
+    --canvas-axis: rgba(0, 0, 0, 0.08);
+
+    /* class colors (1..10) */
+    --c1:  #ef4444; --c1-soft:  #fde2e2;
+    --c2:  #2563eb; --c2-soft:  #dde7fb;
+    --c3:  #10b981; --c3-soft:  #d1fae5;
+    --c4:  #a855f7; --c4-soft:  #f3e8ff;
+    --c5:  #f97316; --c5-soft:  #ffedd5;
+    --c6:  #ec4899; --c6-soft:  #fce7f3;
+    --c7:  #06b6d4; --c7-soft:  #cffafe;
+    --c8:  #eab308; --c8-soft:  #fef9c3;
+    --c9:  #b45309; --c9-soft:  #fef3c7;
+    --c10: #84cc16; --c10-soft: #ecfccb;
+
+    /* annotations */
+    --sv: #f59e0b;
+    --boundary: #111827;
+    --margin: #6b7280;
+
+    /* shadow */
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.08);
+
+    /* scrollable rails — Firefox scrollbar-color + WebKit below */
+    --scrollbar-track: var(--bg-soft);
+    --scrollbar-thumb: #b4becf;
+    --scrollbar-thumb-hover: #97a4b8;
+
+    /* radii */
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 16px;
+
+    /* fonts */
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "SFMono-Regular", Menlo, Consolas, monospace;
+
+    /* app shell metrics */
+    --topbar-h: 60px;
+    --rail-left-w: 296px;
+    --rail-right-w: 232px;
+    --shell-gap: 16px;
+    --shell-pad: 18px;
+}
+
+/* ---------- Dark theme ----------
+   Activated by setting `data-theme="dark"` on <html>. The class color tokens
+   (--c1..--c10, --sv) are kept identical so the canvas heatmap and class
+   buttons read the same way. We also keep the canvas background white so
+   the soft heatmap tints stay accurate. */
+:root[data-theme="dark"] {
+    --bg: #0b1220;
+    --bg-soft: #0f172a;
+    --surface: #111a2e;
+    --surface-2: #0d1626;
+    --border: #1f2a44;
+    --border-strong: #2a395a;
+
+    --text: #e2e8f0;
+    --text-muted: #9aa6bd;
+    --text-faint: #6b7691;
+
+    --accent: #5b8cff;
+    --accent-strong: #93b4ff;
+    --accent-soft: rgba(91, 140, 255, 0.16);
+
+    /* Boundary/margin tokens here only style the legend swatches outside
+       the canvas — flipped to light so they're visible on dark surfaces.
+       The actual on-canvas boundary color is hardcoded in JS and stays dark. */
+    --boundary: #e2e8f0;
+    --margin: #94a3b8;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+
+    --scrollbar-track: var(--surface-2);
+    --scrollbar-thumb: #3d4f70;
+    --scrollbar-thumb-hover: #5a6f94;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.4rem; }
+h2 { font-size: 1.05rem; }
+h3 { font-size: 0.95rem; }
+p  { margin: 0.4em 0; }
+a  { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+select, input, button {
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+select:focus, input:focus, button:focus {
+    outline: 2px solid var(--accent-soft);
+    outline-offset: 1px;
+}
+
+.formula {
+    font-family: var(--mono);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    color: var(--text);
+    margin-top: 8px;
+    overflow-x: auto;
+}
