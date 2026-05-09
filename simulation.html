@@ -185,63 +185,27 @@
 
     <section id="metrics" class="info-section">
         <h2>How to read the live stats</h2>
-        <p>
-            The stats panel shows three different progress signals. They tell you
-            <em>different</em> stories &mdash; the only true sign of convergence is
-            <strong>KKT violations reaching 0</strong>. Accuracy and margin behave 
-            differently by design.
-        </p>
+        <p>The three signals tell <em>different</em> stories. Only <strong>KKT violations = 0</strong> means training is truly done.</p>
 
         <div class="metrics-grid">
             <article>
                 <h3>Training points accuracy</h3>
-                <p>
-                    Percentage of training points that fall on the correct side of the
-                    decision boundary. <strong>Saturates very early</strong> &mdash; for
-                    separable data it usually hits 100% on the very first iteration.
-                </p>
-                <p class="metric-warn">
-                    Hitting 100% accuracy does <strong>not</strong> mean the model is done!
-                    It just means a feasible separator exists. SVM keeps iterating to find
-                    the <em>best</em> separator, not just any feasible one.
-                </p>
+                <p>How many points are on the correct side of the boundary. <strong>Hits 100% early</strong> on separable data — but that doesn't mean training is finished. SVM keeps going to find the <em>best</em> separator, not just any feasible one.</p>
             </article>
 
             <article>
                 <h3>Margin (1 / &Vert;w&Vert;)</h3>
-                <p>
-                    The distance from the decision boundary to the nearest margin line &mdash; the actual
-                    quantity SVM is <em>maximizing</em>. The full corridor width between classes is twice 
-                    this value (2&nbsp;/&nbsp;&Vert;w&Vert;). Computed in feature space as
-                    <span class="formula-inline">1 / &radic;( &Sigma;&Sigma; &alpha;<sub>i</sub>&alpha;<sub>j</sub> y<sub>i</sub>y<sub>j</sub> K(x<sub>i</sub>,x<sub>j</sub>) )</span>.
-                </p>
-                <p>
-                    <strong>Grows monotonically</strong> through training and asymptotes at the
-                    optimum. Watching it climb is the clearest sign the algorithm is still making
-                    progress, even when accuracy is already pinned at 100%.
-                </p>
+                <p>Distance from the boundary to the nearest margin line — the quantity SVM is <em>maximizing</em>. <strong>Grows steadily</strong> until it plateaus at the optimum, even while accuracy is already at 100%.</p>
             </article>
 
             <article>
                 <h3>KKT violations</h3>
-                <p>
-                    Count of training points still violating the
-                    <strong>Karush&ndash;Kuhn&ndash;Tucker</strong> optimality conditions
-                    within tolerance. These are the points that still &ldquo;want&rdquo; to push
-                    the boundary.
-                </p>
-                <p>
-                    <strong>Drops to 0</strong> at convergence &mdash; this is the algorithm&rsquo;s
-                    actual stopping signal. When it reads 0, the algorithm has found the
-                    max-margin separator and further training does nothing.
-                </p>
+                <p>Points still violating optimality conditions. <strong>Drops to 0</strong> at convergence — this is the real stopping signal. When it reads 0, the max-margin separator has been found.</p>
             </article>
         </div>
 
         <p class="metric-summary">
-            <strong>Bottom line:</strong> if you see
-            <em>accuracy = 100%</em> but <em>KKT violations &gt; 0</em>, the algorithm
-            is still improving the margin &mdash; let it finish.
+            <strong>Bottom line:</strong> <em>accuracy = 100%</em> but <em>KKT violations &gt; 0</em> means the algorithm is still improving the margin &mdash; let it finish.
         </p>
     </section>
 
