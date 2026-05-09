@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVM Playground — Interactive Simulation</title>
     <meta name="description" content="Train and visualize Support Vector Machines in real time. Choose kernels, tweak hyperparameters, and watch the decision boundary form." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%233a6df0'/><text x='50' y='72' font-size='52' font-weight='700' fill='white' text-anchor='middle' font-family='sans-serif'>SVM</text></svg>" />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/components.css" />
@@ -158,7 +159,6 @@
                     <div class="stat"><span class="stat-label">Status</span><span id="stat-status" class="stat-val">Idle</span></div>
                     <div class="stat"><span class="stat-label">Training points accuracy</span><span id="stat-acc" class="stat-val">—</span></div>
                     <div class="stat"><span class="stat-label">Margin (1 / &Vert;w&Vert;)</span><span id="stat-margin" class="stat-val">—</span></div>
-                    <div class="stat"><span class="stat-label">KKT violations</span><span id="stat-kkt" class="stat-val">—</span></div>
                     <div class="stat"><span class="stat-label">Support vectors</span><span id="stat-sv" class="stat-val">—</span></div>
                     <div class="stat"><span class="stat-label">Iterations</span><span id="stat-iter" class="stat-val">—</span></div>
                     <div class="stat"><span class="stat-label">Mode</span><span id="stat-mode" class="stat-val">—</span></div>
@@ -185,7 +185,9 @@
 
     <section id="metrics" class="info-section">
         <h2>How to read the live stats</h2>
-        <p>The three signals tell <em>different</em> stories. Only <strong>KKT violations = 0</strong> means training is truly done.</p>
+        <p>These signals tell you what the model learned. Each run may produce slightly 
+            different results because SMO starts from a random initialization &mdash; accuracy
+             and margin can vary between runs. This is normal, not a bug.</p>
 
         <div class="metrics-grid">
             <article>
@@ -197,15 +199,10 @@
                 <h3>Margin (1 / &Vert;w&Vert;)</h3>
                 <p>Distance from the boundary to the nearest margin line — the quantity SVM is <em>maximizing</em>. <strong>Grows steadily</strong> until it plateaus at the optimum, even while accuracy is already at 100%.</p>
             </article>
-
-            <article>
-                <h3>KKT violations</h3>
-                <p>Points still violating optimality conditions. <strong>Drops to 0</strong> at convergence — this is the real stopping signal. When it reads 0, the max-margin separator has been found.</p>
-            </article>
         </div>
 
         <p class="metric-summary">
-            <strong>Bottom line:</strong> <em>accuracy = 100%</em> but <em>KKT violations &gt; 0</em> means the algorithm is still improving the margin &mdash; let it finish.
+            <strong>Bottom line:</strong> if you see <em>accuracy = 100%</em> early, don't stop &mdash; the algorithm is still maximizing the margin, which is the actual goal.
         </p>
     </section>
 

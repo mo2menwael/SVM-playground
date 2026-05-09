@@ -134,7 +134,7 @@ export function updateStats(extra) {
         ui.statMode.textContent    = '—';
         ui.statClasses.textContent = '—';
         ui.statMargin.textContent  = '—';
-        ui.statKKT.textContent     = '—';
+        if (ui.statKKT) ui.statKKT.textContent = '—';
         if (extra && extra.status !== undefined) ui.statStatus.textContent = extra.status;
         return;
     }
@@ -164,7 +164,7 @@ export function updateStats(extra) {
     ui.statSv.textContent     = String(svUnion);
     ui.statIter.textContent   = String(maxIter);
     ui.statMargin.textContent = marginText;
-    ui.statKKT.textContent    = kktTotal === 0 ? '0  ✓' : String(kktTotal);
+    if (ui.statKKT) ui.statKKT.textContent = kktTotal === 0 ? '0  ✓' : String(kktTotal);
     if (state.classifiers.length === 1) {
         ui.statMode.textContent = 'Binary';
     } else {
