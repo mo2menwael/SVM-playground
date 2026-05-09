@@ -615,14 +615,18 @@
         padding: 0 16px;
     }
 
-    .landing-nav-brand span {
-        display: none;
-    }
-
     .landing-nav-actions .btn-train {
         padding: 6px 12px;
         font-size: 0.82rem;
         white-space: nowrap;
+        min-width: 100px;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .landing-nav-actions .btn-theme {
+        min-width: 58px;
+        text-align: center;
     }
 }
 
