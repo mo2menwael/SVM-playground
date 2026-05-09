@@ -16,14 +16,14 @@ import { makeKernel } from './kernels.js';
 
 export class SVM {
     constructor(opts = {}) {
-        this.kernel    = opts.kernel    ?? 'rbf';
-        this.C         = opts.C         ?? 1.0;
-        this.gamma     = opts.gamma     ?? 0.5;
-        this.degree    = opts.degree    ?? 3;
-        this.coef0     = opts.coef0     ?? 1.0;
-        this.tol       = opts.tol       ?? 1e-3;
-        this.maxPasses = opts.maxPasses ?? 8;
-        this.maxIter   = opts.maxIter   ?? 4000;
+        this.kernel = opts.kernel ?? 'rbf';
+        this.C = opts.C ?? 1.0;
+        this.gamma = opts.gamma ?? 0.5;
+        this.degree = opts.degree ?? 3;
+        this.coef0 = opts.coef0 ?? 1.0;
+        this.tol = opts.tol ?? 1e-3;
+        this.maxPasses = opts.maxPasses ?? 15;
+        this.maxIter = opts.maxIter ?? 6000;
 
         this.alphas = null;
         this.b = 0;
@@ -110,15 +110,15 @@ export class SVM {
         alphas[j] = aj;
 
         const b1 = this.b - Ei
-                 - y[i] * (ai - aiOld) * K[i][i]
-                 - y[j] * (aj - ajOld) * K[i][j];
+            - y[i] * (ai - aiOld) * K[i][i]
+            - y[j] * (aj - ajOld) * K[i][j];
         const b2 = this.b - Ej
-                 - y[i] * (ai - aiOld) * K[i][j]
-                 - y[j] * (aj - ajOld) * K[j][j];
+            - y[i] * (ai - aiOld) * K[i][j]
+            - y[j] * (aj - ajOld) * K[j][j];
 
-        if (ai > 0 && ai < C)      this.b = b1;
+        if (ai > 0 && ai < C) this.b = b1;
         else if (aj > 0 && aj < C) this.b = b2;
-        else                       this.b = (b1 + b2) / 2;
+        else this.b = (b1 + b2) / 2;
 
         E[i] = this._decisionAt(i) - y[i];
         E[j] = this._decisionAt(j) - y[j];
@@ -182,14 +182,14 @@ export class SVM {
         for (let i = 0; i < m; i++) {
             const Ei = this._decisionAt(i) - y[i];
             if ((y[i] * Ei < -tol && alphas[i] < C) ||
-                (y[i] * Ei >  tol && alphas[i] > 0)) {
+                (y[i] * Ei > tol && alphas[i] > 0)) {
                 if (this._optimizePair(i, Ei)) numChanged++;
             }
         }
 
         this._iter++;
         if (numChanged === 0) this._passes++;
-        else                  this._passes = 0;
+        else this._passes = 0;
 
         if (this._passes >= this.maxPasses || this._iter >= this.maxIter) {
             this._done = true;
