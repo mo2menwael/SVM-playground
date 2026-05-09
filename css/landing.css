@@ -614,6 +614,16 @@
     .landing-nav-inner {
         padding: 0 16px;
     }
+
+    .landing-nav-brand span {
+        display: none;
+    }
+
+    .landing-nav-actions .btn-train {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
 }
 
 .github-card {
