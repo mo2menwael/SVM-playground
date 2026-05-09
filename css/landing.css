@@ -615,3 +615,142 @@
         padding: 0 16px;
     }
 }
+
+.github-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    padding: 2.75rem 3rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.6) inset;
+    transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.github-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 56px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.6) inset;
+}
+
+/* Rainbow top border */
+.github-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--c4) 40%, var(--c2) 70%, var(--c1) 100%);
+}
+
+/* Subtle background glow */
+.github-card::after {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(58,109,240,0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.github-card-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.github-icon-wrap {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--c4));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(58,109,240,0.3);
+}
+
+.github-card-text .section-tag {
+    margin-bottom: 6px;
+}
+
+.github-card-text h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+}
+
+.github-card-text p {
+    font-size: 0.93rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 520px;
+}
+
+.github-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: var(--bg-soft, rgba(37,99,235,0.07));
+    color: var(--accent);
+    border: 1px solid var(--border);
+    letter-spacing: 0.01em;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.github-tag:hover {
+    background: rgba(58,109,240,0.12);
+    border-color: var(--accent);
+}
+
+.github-card-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 26px;
+    background: var(--bg);
+    border: 1.5px solid var(--border-strong, rgba(58,109,240,0.25));
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.github-card-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(58,109,240,0.35);
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+@media (max-width: 700px) {
+    .github-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 2rem;
+    }
+    .github-card-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
