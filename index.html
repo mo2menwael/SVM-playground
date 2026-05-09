@@ -3,340 +3,364 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SVM Playground — Interactive Support Vector Machine</title>
+    <title>SVM Playground — Learn Support Vector Machines</title>
+    <meta name="description" content="Understand Support Vector Machines visually. Learn about kernels, margins, multi-class strategies, and then try an interactive SVM simulator." />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/landing.css" />
     <script>
-        // Apply persisted theme synchronously to avoid a flash of light mode.
         try {
             const t = localStorage.getItem('svm-theme');
             if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-        } catch (_) { /* localStorage may be blocked — fall back to light */ }
+        } catch (_) {}
     </script>
 </head>
-<body>
-    <header class="topbar" role="banner">
-        <div class="brand">
-            <div class="logo" aria-hidden="true">SVM</div>
-            <div class="brand-text">
-                <h1>SVM Playground</h1>
+<body class="landing-body">
+
+    <!-- ========== Hero ========== -->
+    <section class="hero" id="hero">
+        <div class="hero-bg" aria-hidden="true">
+            <div class="hero-orb hero-orb--1"></div>
+            <div class="hero-orb hero-orb--2"></div>
+            <div class="hero-orb hero-orb--3"></div>
+            <svg class="hero-grid" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+                        <path d="M 48 0 L 0 0 0 48" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.12"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-badge">Interactive ML Playground</div>
+            <h1 class="hero-title">
+                Support Vector<br/>
+                <span class="hero-gradient">Machines</span>
+            </h1>
+            <p class="hero-subtitle">
+                Explore how SVMs find optimal decision boundaries. Learn the theory, 
+                understand kernels, and then build intuition with a live, interactive simulator.
+            </p>
+            <div class="hero-actions">
+                <a href="simulation.html" class="btn-hero" id="btn-launch">
+                    <span>Launch Playground</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="#about" class="btn-hero-ghost" id="btn-learn">Learn First</a>
             </div>
         </div>
 
-        <div class="topbar-actions">
-            <button id="btn-theme" class="btn btn-ghost btn-theme" aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
-            <div class="action-group">
-                <button id="btn-undo"   class="btn btn-ghost">Undo</button>
-                <button id="btn-clear"  class="btn btn-ghost">Clear</button>
-                <button id="btn-export" class="btn btn-ghost">Export PNG</button>
+        <div class="hero-visual" aria-hidden="true">
+            <canvas id="hero-canvas" width="420" height="420"></canvas>
+        </div>
+    </section>
+
+    <!-- ========== Nav (sticky after hero) ========== -->
+    <nav class="landing-nav" id="landing-nav" aria-label="Page sections">
+        <div class="landing-nav-inner">
+            <div class="landing-nav-brand">
+                <div class="logo" aria-hidden="true">SVM</div>
+                <span>SVM Playground</span>
             </div>
-            <button id="btn-step"  class="btn btn-step">Step</button>
-            <button id="btn-train" class="btn btn-primary btn-train">Train SVM</button>
-        </div>
-    </header>
-
-    <main class="app-shell" role="main">
-        <!-- ========== Left rail: data + kernel + sliders ========== -->
-        <aside class="rail rail-left" aria-label="Controls">
-            <section class="panel">
-                <h2>Data</h2>
-                <div class="class-toggle" role="group" aria-label="Active class">
-                    <button class="class-btn active" data-class="1"><span class="dot dot-c1"></span> 1</button>
-                    <button class="class-btn"        data-class="2"><span class="dot dot-c2"></span> 2</button>
-                    <button class="class-btn"        data-class="3"><span class="dot dot-c3"></span> 3</button>
-                    <button class="class-btn"        data-class="4"><span class="dot dot-c4"></span> 4</button>
-                    <button class="class-btn"        data-class="5"><span class="dot dot-c5"></span> 5</button>
-                    <button class="class-btn"        data-class="6"><span class="dot dot-c6"></span> 6</button>
-                    <button class="class-btn"        data-class="7"><span class="dot dot-c7"></span> 7</button>
-                    <button class="class-btn"        data-class="8"><span class="dot dot-c8"></span> 8</button>
-                    <button class="class-btn"        data-class="9"><span class="dot dot-c9"></span> 9</button>
-                    <button class="class-btn"        data-class="10"><span class="dot dot-c10"></span> 10</button>
-                </div>
-                <p class="hint">Left-click drops a point of the active class. Right-click cycles to the next class.</p>
-
-                <div class="row">
-                    <label for="demo-select">Quick demo</label>
-                    <select id="demo-select">
-                        <option value="">Choose</option>
-                        <optgroup label="Binary">
-                            <option value="linear">Linearly separable</option>
-                            <option value="xor">XOR</option>
-                            <option value="circles">Concentric circles</option>
-                            <option value="moons">Two moons</option>
-                            <option value="spiral">Two spirals</option>
-                        </optgroup>
-                        <optgroup label="Multi-class">
-                            <option value="three-blobs">3 blobs</option>
-                            <option value="four-blobs">4 blobs (corners)</option>
-                            <option value="three-rings">3 concentric rings</option>
-                            <option value="five-blobs">5 blobs (center + cardinal)</option>
-                            <option value="ten-blobs">10 blobs (circle, K=10)</option>
-                        </optgroup>
-                    </select>
-                </div>
-
-                <div class="row">
-                    <label for="multiclass-mode">Multi-class</label>
-                    <select id="multiclass-mode">
-                        <option value="ova" selected>One-vs-All (OvA)</option>
-                        <option value="ovo">One-vs-One (OvO)</option>
-                    </select>
-                </div>
-            </section>
-
-            <section class="panel">
-                <h2>Kernel</h2>
-                <div class="row">
-                    <label for="kernel-select">Type</label>
-                    <select id="kernel-select">
-                        <option value="linear">Linear</option>
-                        <option value="poly">Polynomial</option>
-                        <option value="rbf" selected>RBF (Gaussian)</option>
-                        <option value="sigmoid">Sigmoid</option>
-                    </select>
-                </div>
-                <p id="kernel-formula" class="formula"></p>
-            </section>
-
-            <section class="panel panel-params">
-                <h2>Hyperparameters</h2>
-
-                <div class="slider-row">
-                    <div class="slider-label">
-                        <span>C (regularization)</span>
-                        <input id="out-c" class="slider-value" type="number" min="0.01" max="10" step="0.01" value="1.00" aria-label="C value" />
-                    </div>
-                    <input id="param-c" type="range" min="0.01" max="10" step="0.01" value="1" />
-                </div>
-
-                <div class="slider-row" data-param="gamma">
-                    <div class="slider-label">
-                        <span>&gamma; (gamma)</span>
-                        <input id="out-gamma" class="slider-value" type="number" min="0.01" max="5" step="0.01" value="0.50" aria-label="gamma value" />
-                    </div>
-                    <input id="param-gamma" type="range" min="0.01" max="5" step="0.01" value="0.5" />
-                </div>
-
-                <div class="slider-row" data-param="degree">
-                    <div class="slider-label">
-                        <span>degree</span>
-                        <input id="out-degree" class="slider-value" type="number" min="2" max="6" step="1" value="3" aria-label="degree value" />
-                    </div>
-                    <input id="param-degree" type="range" min="2" max="6" step="1" value="3" />
-                </div>
-
-                <div class="slider-row" data-param="coef0">
-                    <div class="slider-label">
-                        <span>coef0</span>
-                        <input id="out-coef0" class="slider-value" type="number" min="-2" max="2" step="0.01" value="1.00" aria-label="coef0 value" />
-                    </div>
-                    <input id="param-coef0" type="range" min="-2" max="2" step="0.01" value="1" />
-                </div>
-            </section>
-        </aside>
-
-        <!-- ========== Center: canvas ========== -->
-        <section class="canvas-area" aria-label="Visualization">
-            <div class="canvas-frame">
-                <canvas id="canvas" width="720" height="720" aria-label="SVM visualization"></canvas>
+            <div class="landing-nav-links">
+                <a href="#about">What is SVM?</a>
+                <a href="#kernels">Kernels</a>
+                <a href="#multiclass">Multi-class</a>
             </div>
-            <div id="legend" class="legend" aria-label="Legend"></div>
-        </section>
+            <div class="landing-nav-actions">
+                <button id="btn-theme-landing" class="btn btn-ghost btn-theme" aria-label="Toggle dark mode">Dark</button>
+                <a href="simulation.html" class="btn btn-primary btn-train">Try It Now</a>
+            </div>
+        </div>
+    </nav>
 
-        <!-- ========== Right rail: live stats ========== -->
-        <aside class="rail rail-right" aria-label="Live stats">
-            <section class="panel panel-stats">
-                <h2>Live stats</h2>
-                <div class="stats">
-                    <div class="stat"><span class="stat-label">Status</span><span id="stat-status" class="stat-val">Idle</span></div>
-                    <div class="stat"><span class="stat-label">Training points accuracy</span><span id="stat-acc" class="stat-val">—</span></div>
-                    <div class="stat"><span class="stat-label">Margin (1 / &Vert;w&Vert;)</span><span id="stat-margin" class="stat-val">—</span></div>
-                    <div class="stat"><span class="stat-label">KKT violations</span><span id="stat-kkt" class="stat-val">—</span></div>
-                    <div class="stat"><span class="stat-label">Support vectors</span><span id="stat-sv" class="stat-val">—</span></div>
-                    <div class="stat"><span class="stat-label">Iterations</span><span id="stat-iter" class="stat-val">—</span></div>
-                    <div class="stat"><span class="stat-label">Mode</span><span id="stat-mode" class="stat-val">—</span></div>
-                    <div class="stat"><span class="stat-label">Classes</span><span id="stat-classes" class="stat-val">—</span></div>
+    <!-- ========== What is SVM ========== -->
+    <section id="about" class="edu-section">
+        <div class="edu-container">
+            <div class="section-tag">The Fundamentals</div>
+            <h2>What is a Support Vector Machine?</h2>
+            <div class="edu-columns">
+                <div class="edu-text">
+                    <p>
+                        A <strong>Support Vector Machine (SVM)</strong> is a supervised learning algorithm that finds the
+                        hyperplane that <em>maximally separates</em> two classes. The data points closest to the boundary
+                        are the <em>support vectors</em> &mdash; they are the only points that actually define the
+                        decision surface.
+                    </p>
+                    <p>
+                        When data is not linearly separable, SVM uses the <strong>kernel trick</strong> to implicitly transform the 
+                        input data into a higher-dimensional feature space where a linear separator can exist. Instead of computing 
+                        the transformation directly, a kernel function measures similarities between data points efficiently. Common 
+                        kernels include the linear, polynomial, and RBF (Gaussian) kernels, which allow SVMs to handle complex nonlinear 
+                        classification problems.
+                    </p>
                 </div>
-            </section>
-        </aside>
-    </main>
-
-    <!-- ========== Educational sections (below the fold) ========== -->
-    <section id="about" class="info-section">
-        <h2>What is a Support Vector Machine?</h2>
-        <p>
-            A <strong>Support Vector Machine (SVM)</strong> is a supervised learning algorithm that finds the
-            hyperplane that <em>maximally separates</em> two classes. The data points closest to the boundary
-            are the <em>support vectors</em> &mdash; they are the only points that actually define the
-            decision surface.
-        </p>
-        <p>
-            When data is not linearly separable, SVM uses the <strong>kernel trick</strong> to implicitly transform the 
-            input data into a higher-dimensional feature space where a linear separator can exist. Instead of computing 
-            the transformation directly, a kernel function measures similarities between data points efficiently. Common 
-            kernels include the linear, polynomial, and RBF (Gaussian) kernels, which allow SVMs to handle complex nonlinear 
-            classification problems.
-        </p>
-    </section>
-
-    <section id="kernels" class="info-section">
-        <h2>Kernel types covered</h2>
-        <div class="kernel-grid">
-            <article>
-                <h3>Linear</h3>
-                <p class="formula">K(x, y) = x &middot; y</p>
-                <p>Best when data is (nearly) linearly separable. Fast and interpretable.</p>
-            </article>
-            <article>
-                <h3>Polynomial</h3>
-                <p class="formula">K(x, y) = (&gamma; x &middot; y + coef0)<sup>d</sup></p>
-                <p>Captures curved boundaries. Degree <em>d</em> controls flexibility.</p>
-            </article>
-            <article>
-                <h3>RBF (Gaussian)</h3>
-                <p class="formula">K(x, y) = exp(&minus;&gamma; ‖x &minus; y‖²)</p>
-                <p>The most popular kernel &mdash; works well for arbitrary, smooth boundaries.</p>
-            </article>
-            <article>
-                <h3>Sigmoid</h3>
-                <p class="formula">K(x, y) = tanh(&gamma; x &middot; y + coef0)</p>
-                <p>Behaves like a 2-layer neural net. Sensitive to parameters.</p>
-            </article>
+                <div class="edu-highlight-card">
+                    <div class="highlight-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="10" cy="12" r="3" fill="var(--c1)"/>
+                            <circle cx="22" cy="20" r="3" fill="var(--c2)"/>
+                            <line x1="6" y1="26" x2="26" y2="6" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
+                        </svg>
+                    </div>
+                    <h3>Key Idea</h3>
+                    <p>SVM doesn't just find <em>any</em> separator — it finds the one with the <strong>maximum margin</strong>, 
+                    giving the best generalization to unseen data.</p>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section id="how-to" class="info-section">
-        <h2>How to use</h2>
-        <ol>
-            <li>Pick a class (1&ndash;10) and click on the canvas to scatter points, or pick a quick demo.</li>
-            <li>Choose a kernel and adjust C, &gamma;, degree, coef0.</li>
-            <li>Click <strong>Train SVM</strong> for automatic training or you can click 
-                <strong>Step</strong> to see the training process.</li>
-            <li>With <strong>2</strong> classes you get a binary SVM (boundary + margins shown). For <strong>3–10</strong>
-                 classes, multiclass classification can be handled using either <em>one-vs-all</em> or <em>one-vs-one</em> 
-                 strategies, and the canvas is colored according to the predicted class regions.</li>
-            <li>Use <strong>Export PNG</strong> to save the current visualization.</li>
-        </ol>
-    </section>
-
-    <section id="multiclass" class="info-section">
-        <h2>Multi-class strategies</h2>
-        <p>
-            SVM is fundamentally a <em>binary</em> classifier. To separate K classes
-            (K &ge; 3) we need to combine multiple binary SVMs. There are two standard
-            ways to do this:
-        </p>
-
-        <div class="metrics-grid">
-            <article>
-                <h3>One-vs-All (OvA)</h3>
-                <p>
-                    Train <strong>K</strong> binary classifiers. Each one answers
-                    &ldquo;is this point class <em>i</em>, yes or no?&rdquo; The final
-                    prediction is the class whose classifier outputs the highest
-                    decision value (<em>argmax</em>).
-                </p>
-                <p>
-                    <strong>Pros:</strong> Few classifiers (4 for K=4, 10 for K=10).
-                    Each classifier sees all the training data, which can help with
-                    small datasets.
-                </p>
-                <p>
-                    <strong>Cons:</strong> Each binary problem is <em>imbalanced</em>
-                    &mdash; one class against K&minus;1 others. SVM&rsquo;s margin can
-                    suffer when classes are very unbalanced.
-                </p>
-            </article>
-
-            <article>
-                <h3>One-vs-One (OvO)</h3>
-                <p>
-                    Train <strong>K(K&minus;1)/2</strong> binary classifiers, one for
-                    every <em>pair</em> of classes. Each classifier sees only the points
-                    from those two classes. The final prediction is the class with the
-                    most votes across all pairwise classifiers.
-                </p>
-                <p>
-                    <strong>Pros:</strong> Each binary problem is <em>balanced</em>
-                    (similar number of points per class). Each problem is also smaller,
-                    so each individual SVM trains faster. This is what
-                    <code>scikit-learn</code>&rsquo;s default <code>SVC</code> uses.
-                </p>
-                <p>
-                    <strong>Cons:</strong> Many more classifiers as K grows
-                    (45 for K=10). Voting can produce ties.
-                </p>
-            </article>
+    <!-- ========== Kernels ========== -->
+    <section id="kernels" class="edu-section edu-section--alt">
+        <div class="edu-container">
+            <div class="section-tag">The Kernel Trick</div>
+            <h2>Kernel types covered</h2>
+            <p class="section-intro">
+                Kernels let SVMs operate in high-dimensional spaces without ever computing the transformation explicitly. 
+                Each kernel defines a different notion of &ldquo;similarity&rdquo; between points.
+            </p>
+            <div class="kernel-cards">
+                <article class="kernel-card">
+                    <div class="kernel-card-accent" style="--accent-c: var(--c1);"></div>
+                    <h3>Linear</h3>
+                    <p class="formula">K(x, y) = x &middot; y</p>
+                    <p>Best when data is (nearly) linearly separable. Fast and interpretable. The decision boundary is a straight line (or hyperplane).</p>
+                </article>
+                <article class="kernel-card">
+                    <div class="kernel-card-accent" style="--accent-c: var(--c2);"></div>
+                    <h3>Polynomial</h3>
+                    <p class="formula">K(x, y) = (<span style="font-family:serif;">γ</span> x &middot; y + coef0)<sup>d</sup></p>
+                    <p>Captures curved boundaries. Degree <em>d</em> controls flexibility — higher degree means more complex shapes but risk of overfitting.</p>
+                </article>
+                <article class="kernel-card">
+                    <div class="kernel-card-accent" style="--accent-c: var(--c3);"></div>
+                    <h3>RBF (Gaussian)</h3>
+                    <p class="formula">K(x, y) = exp(&minus;<span style="font-family:serif;">γ</span> ‖x &minus; y‖²)</p>
+                    <p>The most popular kernel &mdash; maps to infinite-dimensional space. Works well for arbitrary, smooth decision boundaries.</p>
+                </article>
+                <article class="kernel-card">
+                    <div class="kernel-card-accent" style="--accent-c: var(--c4);"></div>
+                    <h3>Sigmoid</h3>
+                    <p class="formula">K(x, y) = tanh(<span style="font-family:serif;">γ</span> x &middot; y + coef0)</p>
+                    <p>Behaves like a 2-layer neural network. Sensitive to <span style="font-family:serif;">γ</span> and coef0 — not always a valid Mercer kernel.</p>
+                </article>
+            </div>
         </div>
-
-        <p class="metric-summary">
-            <strong>Try both:</strong> on most datasets the predictions are nearly
-            identical. The difference becomes visible on datasets where one class is
-            much smaller than the others (OvA struggles, OvO usually doesn&rsquo;t).
-        </p>
     </section>
 
-    <section id="metrics" class="info-section">
-        <h2>How to read the live stats</h2>
-        <p>
-            The stats panel shows three different progress signals. They tell you
-            <em>different</em> stories &mdash; you only know the model is fully trained
-            when all three agree.
-        </p>
+    <!-- ========== Multi-class ========== -->
+    <section id="multiclass" class="edu-section">
+        <div class="edu-container">
+            <div class="section-tag">Beyond Binary</div>
+            <h2>Multi-class strategies</h2>
+            <p class="section-intro">
+                SVM is fundamentally a <em>binary</em> classifier. To separate K classes
+                (K &ge; 3) we need to combine multiple binary SVMs. There are two standard approaches:
+            </p>
 
-        <div class="metrics-grid">
-            <article>
-                <h3>Training points accuracy</h3>
-                <p>
-                    Percentage of training points that fall on the correct side of the
-                    decision boundary. <strong>Saturates very early</strong> &mdash; for
-                    separable data it usually hits 100% on the very first iteration.
-                </p>
-                <p class="metric-warn">
-                    Hitting 100% accuracy does <strong>not</strong> mean the model is done!
-                    It just means a feasible separator exists. SVM keeps iterating to find
-                    the <em>best</em> separator, not just any feasible one.
-                </p>
-            </article>
+            <div class="strategy-grid">
+                <article class="strategy-card">
+                    <div class="strategy-badge strategy-badge--ova">OvA</div>
+                    <h3>One-vs-All (OvA)</h3>
+                    <p>
+                        Train <strong>K</strong> binary classifiers. Each one answers
+                        &ldquo;is this point class <em>i</em>, yes or no?&rdquo; The final
+                        prediction is the class whose classifier outputs the highest
+                        decision value (<em>argmax</em>).
+                    </p>
+                    <div class="strategy-pros-cons">
+                        <div class="strategy-pro">
+                            <strong>Pros:</strong> Few classifiers (4 for K=4, 10 for K=10).
+                            Each classifier sees all the training data.
+                        </div>
+                        <div class="strategy-con">
+                            <strong>Cons:</strong> Each binary problem is <em>imbalanced</em>
+                            &mdash; one class against K&minus;1 others.
+                        </div>
+                    </div>
+                </article>
 
-            <article>
-                <h3>Margin (1 / &Vert;w&Vert;)</h3>
-                <p>
-                    The width of the corridor between the two classes &mdash; the actual
-                    quantity SVM is <em>maximizing</em>. Computed in feature space as
-                    <span class="formula-inline">1 / &radic;( &Sigma;&Sigma; &alpha;<sub>i</sub>&alpha;<sub>j</sub> y<sub>i</sub>y<sub>j</sub> K(x<sub>i</sub>,x<sub>j</sub>) )</span>.
-                </p>
-                <p>
-                    <strong>Grows monotonically</strong> through training and asymptotes at the
-                    optimum. Watching it climb is the clearest sign the algorithm is still making
-                    progress, even when accuracy is already pinned at 100%.
-                </p>
-            </article>
+                <article class="strategy-card">
+                    <div class="strategy-badge strategy-badge--ovo">OvO</div>
+                    <h3>One-vs-One (OvO)</h3>
+                    <p>
+                        Train <strong>K(K&minus;1)/2</strong> binary classifiers, one for
+                        every <em>pair</em> of classes. Each classifier sees only the points
+                        from those two classes. Prediction is by majority vote.
+                    </p>
+                    <div class="strategy-pros-cons">
+                        <div class="strategy-pro">
+                            <strong>Pros:</strong> Each binary problem is <em>balanced</em>.
+                            Each problem is also smaller, so training is faster.
+                            This is scikit-learn's default.
+                        </div>
+                        <div class="strategy-con">
+                            <strong>Cons:</strong> Many more classifiers as K grows
+                            (45 for K=10). Voting can produce ties.
+                        </div>
+                    </div>
+                </article>
+            </div>
 
-            <article>
-                <h3>KKT violations</h3>
-                <p>
-                    Count of training points still violating the
-                    <strong>Karush&ndash;Kuhn&ndash;Tucker</strong> optimality conditions
-                    within tolerance. These are the points that still &ldquo;want&rdquo; to push
-                    the boundary.
-                </p>
-                <p>
-                    <strong>Drops to 0</strong> at convergence &mdash; this is the algorithm&rsquo;s
-                    actual stopping signal. When it reads 0, the algorithm has found the
-                    max-margin separator and further training does nothing.
-                </p>
-            </article>
+            <p class="strategy-tip">
+                <strong>Try both:</strong> on most datasets the predictions are nearly
+                identical. The difference becomes visible on datasets where one class is
+                much smaller than the others (OvA struggles, OvO usually doesn&rsquo;t).
+            </p>
         </div>
-
-        <p class="metric-summary">
-            <strong>Bottom line:</strong> if you see
-            <em>accuracy = 100%</em> but <em>KKT violations &gt; 0</em>, the algorithm
-            is still improving the margin &mdash; let it finish.
-        </p>
     </section>
 
-    <script type="module" src="js/main.js"></script>
+    <!-- ========== CTA Footer ========== -->
+    <section class="cta-section">
+        <div class="cta-inner">
+            <h2>Ready to experiment?</h2>
+            <p>Launch the interactive playground and build your own intuition for how SVMs work.</p>
+            <a href="simulation.html" class="btn-hero" id="btn-launch-bottom">
+                <span>Open the Playground</span>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+        </div>
+    </section>
+
+    <script>
+        /* ---- Theme toggle ---- */
+        const themeBtn = document.getElementById('btn-theme-landing');
+        const reflect = () => {
+            const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            themeBtn.textContent = dark ? 'Light' : 'Dark';
+        };
+        reflect();
+        themeBtn.addEventListener('click', () => {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            if (next === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            else document.documentElement.removeAttribute('data-theme');
+            try { localStorage.setItem('svm-theme', next); } catch(_) {}
+            reflect();
+        });
+
+        /* ---- Hero mini-canvas (animated scatter preview) ---- */
+        (function() {
+            const c = document.getElementById('hero-canvas');
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const W = c.width, H = c.height;
+
+            const palette = ['#ef4444','#2563eb','#10b981','#a855f7'];
+            const softPalette = ['rgba(239,68,68,0.10)','rgba(37,99,235,0.10)','rgba(16,185,129,0.10)','rgba(168,85,247,0.10)'];
+
+            // Generate demo points (4 clusters)
+            function gauss(mu, sigma) {
+                const u = 1 - Math.random(), v = Math.random();
+                return mu + sigma * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+            }
+            const pts = [];
+            const centers = [
+                {cx: 120, cy: 120, cls: 0},
+                {cx: 300, cy: 120, cls: 1},
+                {cx: 120, cy: 300, cls: 2},
+                {cx: 300, cy: 300, cls: 3},
+            ];
+            centers.forEach(({cx, cy, cls}) => {
+                for (let i = 0; i < 18; i++) {
+                    pts.push({
+                        x: gauss(cx, 38),
+                        y: gauss(cy, 38),
+                        cls,
+                        phase: Math.random() * Math.PI * 2,
+                        amp: 1.5 + Math.random() * 2,
+                    });
+                }
+            });
+
+            // Animated boundary (decorative sine wave grid)
+            let frame = 0;
+            function draw() {
+                ctx.clearRect(0, 0, W, H);
+
+                // Soft region fills
+                const grd = 40;
+                for (let gy = 0; gy < grd; gy++) {
+                    for (let gx = 0; gx < grd; gx++) {
+                        const px = (gx / grd) * W, py = (gy / grd) * H;
+                        let best = 0, bestD = Infinity;
+                        centers.forEach(({cx, cy, cls}) => {
+                            const d = (px - cx)**2 + (py - cy)**2;
+                            if (d < bestD) { bestD = d; best = cls; }
+                        });
+                        ctx.fillStyle = softPalette[best];
+                        ctx.fillRect(px, py, W/grd + 1, H/grd + 1);
+                    }
+                }
+
+                // Grid lines
+                ctx.strokeStyle = 'rgba(120,130,150,0.08)';
+                ctx.lineWidth = 0.5;
+                for (let x = 0; x < W; x += 48) {
+                    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+                }
+                for (let y = 0; y < H; y += 48) {
+                    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+                }
+
+                // Animated decision boundaries (decorative)
+                ctx.strokeStyle = 'rgba(17,24,39,0.25)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([6, 4]);
+                // Horizontal
+                ctx.beginPath();
+                for (let x = 0; x <= W; x += 3) {
+                    const y = H/2 + Math.sin(x * 0.015 + frame * 0.02) * 12;
+                    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                // Vertical
+                ctx.beginPath();
+                for (let y = 0; y <= H; y += 3) {
+                    const x = W/2 + Math.sin(y * 0.015 + frame * 0.025) * 12;
+                    y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Points
+                const t = frame * 0.03;
+                pts.forEach(p => {
+                    const px = p.x + Math.sin(t + p.phase) * p.amp;
+                    const py = p.y + Math.cos(t + p.phase * 1.3) * p.amp;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = palette[p.cls];
+                    ctx.fill();
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeStyle = '#fff';
+                    ctx.stroke();
+                });
+
+                frame++;
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+
+        /* ---- Smooth scroll for anchor links ---- */
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVM Playground — Interactive Simulation</title>
+    <meta name="description" content="Train and visualize Support Vector Machines in real time. Choose kernels, tweak hyperparameters, and watch the decision boundary form." />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <script>
+        // Apply persisted theme synchronously to avoid a flash of light mode.
+        try {
+            const t = localStorage.getItem('svm-theme');
+            if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (_) { /* localStorage may be blocked — fall back to light */ }
+    </script>
+</head>
+<body>
+    <header class="topbar" role="banner">
+        <div class="brand">
+            <a href="index.html" class="back-link" aria-label="Back to Learn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+            <div class="logo" aria-hidden="true">SVM</div>
+            <div class="brand-text">
+                <h1>SVM Playground</h1>
+            </div>
+        </div>
+
+        <div class="topbar-actions">
+            <button id="btn-theme" class="btn btn-ghost btn-theme" aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+            <div class="action-group">
+                <button id="btn-undo"   class="btn btn-ghost">Undo</button>
+                <button id="btn-clear"  class="btn btn-ghost">Clear</button>
+                <button id="btn-export" class="btn btn-ghost">Export PNG</button>
+            </div>
+            <button id="btn-step"  class="btn btn-step">Step</button>
+            <button id="btn-train" class="btn btn-primary btn-train">Train SVM</button>
+        </div>
+    </header>
+
+    <main class="app-shell" role="main">
+        <!-- ========== Left rail: data + kernel + sliders ========== -->
+        <aside class="rail rail-left" aria-label="Controls">
+            <section class="panel">
+                <h2>Data</h2>
+                <div class="class-toggle" role="group" aria-label="Active class">
+                    <button class="class-btn active" data-class="1"><span class="dot dot-c1"></span> 1</button>
+                    <button class="class-btn"        data-class="2"><span class="dot dot-c2"></span> 2</button>
+                    <button class="class-btn"        data-class="3"><span class="dot dot-c3"></span> 3</button>
+                    <button class="class-btn"        data-class="4"><span class="dot dot-c4"></span> 4</button>
+                    <button class="class-btn"        data-class="5"><span class="dot dot-c5"></span> 5</button>
+                    <button class="class-btn"        data-class="6"><span class="dot dot-c6"></span> 6</button>
+                    <button class="class-btn"        data-class="7"><span class="dot dot-c7"></span> 7</button>
+                    <button class="class-btn"        data-class="8"><span class="dot dot-c8"></span> 8</button>
+                    <button class="class-btn"        data-class="9"><span class="dot dot-c9"></span> 9</button>
+                    <button class="class-btn"        data-class="10"><span class="dot dot-c10"></span> 10</button>
+                </div>
+                <p class="hint">Left-click drops a point of the active class. Right-click cycles to the next class.</p>
+
+                <div class="row">
+                    <label for="demo-select">Quick demo</label>
+                    <select id="demo-select">
+                        <option value="">Choose</option>
+                        <optgroup label="Binary">
+                            <option value="linear">Linearly separable</option>
+                            <option value="xor">XOR</option>
+                            <option value="circles">Concentric circles</option>
+                            <option value="moons">Two moons</option>
+                            <option value="spiral">Two spirals</option>
+                        </optgroup>
+                        <optgroup label="Multi-class">
+                            <option value="three-blobs">3 blobs</option>
+                            <option value="four-blobs">4 blobs (corners)</option>
+                            <option value="three-rings">3 concentric rings</option>
+                            <option value="five-blobs">5 blobs (center + cardinal)</option>
+                            <option value="ten-blobs">10 blobs (circle, K=10)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <label for="multiclass-mode">Multi-class</label>
+                    <select id="multiclass-mode">
+                        <option value="ova" selected>One-vs-All (OvA)</option>
+                        <option value="ovo">One-vs-One (OvO)</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Kernel</h2>
+                <div class="row">
+                    <label for="kernel-select">Type</label>
+                    <select id="kernel-select">
+                        <option value="linear">Linear</option>
+                        <option value="poly">Polynomial</option>
+                        <option value="rbf" selected>RBF (Gaussian)</option>
+                        <option value="sigmoid">Sigmoid</option>
+                    </select>
+                </div>
+                <p id="kernel-formula" class="formula"></p>
+            </section>
+
+            <section class="panel panel-params">
+                <h2>Hyperparameters</h2>
+
+                <div class="slider-row">
+                    <div class="slider-label">
+                        <span>C (regularization)</span>
+                        <input id="out-c" class="slider-value" type="number" min="0.01" max="10" step="0.01" value="1.00" aria-label="C value" />
+                    </div>
+                    <input id="param-c" type="range" min="0.01" max="10" step="0.01" value="1" />
+                </div>
+
+                <div class="slider-row" data-param="gamma">
+                    <div class="slider-label">
+                        <span><span style="font-family:serif;">γ</span> (gamma)</span>
+                        <input id="out-gamma" class="slider-value" type="number" min="0.01" max="5" step="0.01" value="0.50" aria-label="gamma value" />
+                    </div>
+                    <input id="param-gamma" type="range" min="0.01" max="5" step="0.01" value="0.5" />
+                </div>
+
+                <div class="slider-row" data-param="degree">
+                    <div class="slider-label">
+                        <span>degree</span>
+                        <input id="out-degree" class="slider-value" type="number" min="2" max="6" step="1" value="3" aria-label="degree value" />
+                    </div>
+                    <input id="param-degree" type="range" min="2" max="6" step="1" value="3" />
+                </div>
+
+                <div class="slider-row" data-param="coef0">
+                    <div class="slider-label">
+                        <span>coef0</span>
+                        <input id="out-coef0" class="slider-value" type="number" min="-2" max="2" step="0.01" value="1.00" aria-label="coef0 value" />
+                    </div>
+                    <input id="param-coef0" type="range" min="-2" max="2" step="0.01" value="1" />
+                </div>
+            </section>
+        </aside>
+
+        <!-- ========== Center: canvas ========== -->
+        <section class="canvas-area" aria-label="Visualization">
+            <div class="canvas-frame">
+                <canvas id="canvas" width="720" height="720" aria-label="SVM visualization"></canvas>
+            </div>
+            <div id="legend" class="legend" aria-label="Legend"></div>
+        </section>
+
+        <!-- ========== Right rail: live stats ========== -->
+        <aside class="rail rail-right" aria-label="Live stats">
+            <section class="panel panel-stats">
+                <h2>Live stats</h2>
+                <div class="stats">
+                    <div class="stat"><span class="stat-label">Status</span><span id="stat-status" class="stat-val">Idle</span></div>
+                    <div class="stat"><span class="stat-label">Training points accuracy</span><span id="stat-acc" class="stat-val">—</span></div>
+                    <div class="stat"><span class="stat-label">Margin (1 / &Vert;w&Vert;)</span><span id="stat-margin" class="stat-val">—</span></div>
+                    <div class="stat"><span class="stat-label">KKT violations</span><span id="stat-kkt" class="stat-val">—</span></div>
+                    <div class="stat"><span class="stat-label">Support vectors</span><span id="stat-sv" class="stat-val">—</span></div>
+                    <div class="stat"><span class="stat-label">Iterations</span><span id="stat-iter" class="stat-val">—</span></div>
+                    <div class="stat"><span class="stat-label">Mode</span><span id="stat-mode" class="stat-val">—</span></div>
+                    <div class="stat"><span class="stat-label">Classes</span><span id="stat-classes" class="stat-val">—</span></div>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <!-- ========== Info sections (below the simulation) ========== -->
+    <section id="how-to" class="info-section">
+        <h2>How to use</h2>
+        <ol>
+            <li>Pick a class (1&ndash;10) and click on the canvas to scatter points, or pick a quick demo.</li>
+            <li>Choose a kernel and adjust C, <span style="font-family:serif;">γ</span>, degree, coef0.</li>
+            <li>Click <strong>Train SVM</strong> for automatic training or you can click 
+                <strong>Step</strong> to see the training process.</li>
+            <li>With <strong>2</strong> classes you get a binary SVM (boundary + margins shown). For <strong>3–10</strong>
+                 classes, multiclass classification can be handled using either <em>one-vs-all</em> or <em>one-vs-one</em> 
+                 strategies, and the canvas is colored according to the predicted class regions.</li>
+            <li>Use <strong>Export PNG</strong> to save the current visualization.</li>
+        </ol>
+    </section>
+
+    <section id="metrics" class="info-section">
+        <h2>How to read the live stats</h2>
+        <p>
+            The stats panel shows three different progress signals. They tell you
+            <em>different</em> stories &mdash; the only true sign of convergence is
+            <strong>KKT violations reaching 0</strong>. Accuracy and margin behave 
+            differently by design.
+        </p>
+
+        <div class="metrics-grid">
+            <article>
+                <h3>Training points accuracy</h3>
+                <p>
+                    Percentage of training points that fall on the correct side of the
+                    decision boundary. <strong>Saturates very early</strong> &mdash; for
+                    separable data it usually hits 100% on the very first iteration.
+                </p>
+                <p class="metric-warn">
+                    Hitting 100% accuracy does <strong>not</strong> mean the model is done!
+                    It just means a feasible separator exists. SVM keeps iterating to find
+                    the <em>best</em> separator, not just any feasible one.
+                </p>
+            </article>
+
+            <article>
+                <h3>Margin (1 / &Vert;w&Vert;)</h3>
+                <p>
+                    The distance from the decision boundary to the nearest margin line &mdash; the actual
+                    quantity SVM is <em>maximizing</em>. The full corridor width between classes is twice 
+                    this value (2&nbsp;/&nbsp;&Vert;w&Vert;). Computed in feature space as
+                    <span class="formula-inline">1 / &radic;( &Sigma;&Sigma; &alpha;<sub>i</sub>&alpha;<sub>j</sub> y<sub>i</sub>y<sub>j</sub> K(x<sub>i</sub>,x<sub>j</sub>) )</span>.
+                </p>
+                <p>
+                    <strong>Grows monotonically</strong> through training and asymptotes at the
+                    optimum. Watching it climb is the clearest sign the algorithm is still making
+                    progress, even when accuracy is already pinned at 100%.
+                </p>
+            </article>
+
+            <article>
+                <h3>KKT violations</h3>
+                <p>
+                    Count of training points still violating the
+                    <strong>Karush&ndash;Kuhn&ndash;Tucker</strong> optimality conditions
+                    within tolerance. These are the points that still &ldquo;want&rdquo; to push
+                    the boundary.
+                </p>
+                <p>
+                    <strong>Drops to 0</strong> at convergence &mdash; this is the algorithm&rsquo;s
+                    actual stopping signal. When it reads 0, the algorithm has found the
+                    max-margin separator and further training does nothing.
+                </p>
+            </article>
+        </div>
+
+        <p class="metric-summary">
+            <strong>Bottom line:</strong> if you see
+            <em>accuracy = 100%</em> but <em>KKT violations &gt; 0</em>, the algorithm
+            is still improving the margin &mdash; let it finish.
+        </p>
+    </section>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
