@@ -100,10 +100,9 @@ export function updateKernelUI() {
     ui.formula.textContent = KERNEL_FORMULAS[state.kernel];
     const isLinear = state.kernel === 'linear';
     const isPoly   = state.kernel === 'poly';
-    const isSig    = state.kernel === 'sigmoid';
     ui.rowGamma .classList.toggle('disabled', isLinear);
     ui.rowDegree.classList.toggle('disabled', !isPoly);
-    ui.rowCoef0 .classList.toggle('disabled', !(isPoly || isSig));
+    ui.rowCoef0 .classList.toggle('disabled', !isPoly);
 }
 
 /* ---------- Legend ---------- */

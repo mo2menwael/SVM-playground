@@ -21,11 +21,6 @@ export const Kernels = {
         const dy = a[1] - b[1];
         return Math.exp(-p.gamma * (dx * dx + dy * dy));
     },
-
-    sigmoid(a, b, p) {
-        const dot = a[0] * b[0] + a[1] * b[1];
-        return Math.tanh(p.gamma * dot + p.coef0);
-    },
 };
 
 /** Returns a `(a, b) -> number` kernel function bound to the given params. */
@@ -34,7 +29,6 @@ export function makeKernel(name, params) {
         case 'linear':  return (a, b) => Kernels.linear(a, b);
         case 'poly':    return (a, b) => Kernels.poly(a, b, params);
         case 'rbf':     return (a, b) => Kernels.rbf(a, b, params);
-        case 'sigmoid': return (a, b) => Kernels.sigmoid(a, b, params);
         default: throw new Error('Unknown kernel: ' + name);
     }
 }

@@ -9,7 +9,7 @@ The app is split into two pages:
 1. **Learn** (`index.html`) — an educational landing page covering SVM theory,
    kernel types, and multi-class strategies.
 2. **Playground** (`simulation.html`) — scatter labelled points on a canvas,
-   choose a kernel (`linear`, `polynomial`, `RBF`, `sigmoid`), tweak
+   choose a kernel (`linear`, `polynomial`, `RBF`), tweak
    hyperparameters, and watch the SVM train **pass-by-pass** via simplified
    SMO. Supports both **binary** and **multi-class (one-vs-all / one-vs-one)**
    classification.
@@ -18,7 +18,7 @@ The app is split into two pages:
 
 ## Features
 
-- **Four kernels**: linear, polynomial, RBF (Gaussian), sigmoid.
+- **Three kernels**: linear, polynomial, RBF (Gaussian).
 - **Binary** SVM with decision boundary, margins (`f = ±1`), and support-vector
   highlighting.
 - **Multi-class**: up to 10 classes via **one-vs-all** (OvA) or **one-vs-one**
@@ -157,7 +157,7 @@ filtering onto the visible canvas. Margin lines (`f = ±1`) and the boundary
 The educational page covers:
 
 - **What is a Support Vector Machine?** — margin maximization and the kernel trick.
-- **Kernel types** — linear, polynomial, RBF, sigmoid with formulas and descriptions.
+- **Kernel types** — linear, polynomial, RBF with formulas and descriptions.
 - **Multi-class strategies** — OvA vs OvO with pros / cons.
 - Animated hero canvas showing a 4-cluster demo.
 

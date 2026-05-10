@@ -34,5 +34,4 @@ export const KERNEL_FORMULAS = {
     linear:  'K(x, y) = x · y',
     poly:    'K(x, y) = (γ · x · y + coef0)^degree',
     rbf:     'K(x, y) = exp(−γ · ‖x − y‖²)',
-    sigmoid: 'K(x, y) = tanh(γ · x · y + coef0)',
 };
